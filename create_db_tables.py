@@ -1,5 +1,5 @@
 import mysql.connector
-
+import sys
 
 class createdb_table:
 
@@ -12,10 +12,9 @@ class createdb_table:
         self.cursor=''
 
     def user_input(self):
-        print("Please enter your database_username")
-        self.username=input(str)
-        print("Please enter your database_password")
-        self.password=input(str)    
+        #import pdb;pdb.set_trace()
+        self.username=sys.argv[1]
+        self.password=sys.argv[2]    
 
     def set_up_db_connection(self):
         #import pdb;pdb.set_trace()
@@ -35,7 +34,9 @@ class createdb_table:
             self.cursor.execute("use %s;"%self.database)
             create_tables=["create table National_news_details (sk_key varchar(500) primary key, News_headlines varchar(1000), News_intro varchar(2000), News_details varchar(50000), Country varchar(100),Date varchar(100),Updated_at varchar(200), News_url varchar(1000));"]
             for query in create_tables:
-                self.cursor.execute(query)           
+                self.cursor.execute(query)  
+            print("\n")    
+            print("Table created.................")             
         else:
             print("%s db is already exist"%self.database)
             self.cursor.execute("use %s;"%self.database)
@@ -45,8 +46,11 @@ class createdb_table:
                 create_tables=["create table National_news_details (sk_key varchar(500) primary key, News_headlines varchar(1000), News_intro varchar(2000), News_details varchar(50000), Country varchar(100),Date varchar(100),Updated_at varchar(200), News_url varchar(1000));"]
                 for query in create_tables:
                     self.cursor.execute(query) 
+                print ("table created.......")    
             else:
+                print ("\n")
                 print("Table is already exist in DB")
+        self.connection.close()        
                            
 
 
