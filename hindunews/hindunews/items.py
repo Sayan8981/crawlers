@@ -18,3 +18,4 @@ class Hindu_national_newsItem(scrapy.Item):
     date=scrapy.Field()
     updated_at=scrapy.Field()
     news_url=scrapy.Field()
+    sk_key=scrapy.Field()
