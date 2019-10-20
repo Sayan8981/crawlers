@@ -97,6 +97,7 @@ class hindunews(Spider):
         #import pdb;pdb.set_trace()
         sel=Selector(headlines_url)
         national_news_item=Hindu_national_newsItem()
+        national_news_item['section']='National'
         national_news_item['news_headlines']=(sel.xpath(xpath.national_news_headlines_xpath).extract())[0].strip("\n ")
         national_news_item['news_tagline']=sel.xpath(xpath.national_news_tagline_xpath).extract()
         if national_news_item['news_tagline']:
@@ -109,7 +110,7 @@ class hindunews(Spider):
         national_news_item['updated_at']=sel.xpath(xpath.national_news_updatedDate_xpath).extract()[0].strip("\n ")
         national_news_item['news_url']=headlines_url.url
         national_news_item['sk_key']=hashlib.md5(headlines_url.url.encode()).hexdigest()
-        print(national_news_item)
+        yield national_news_item
 
 
     def parse_international_news_url(self,international_news_url):

@@ -8,4 +8,6 @@
 
 class HindunewsPipeline(object):
     def process_item(self, item, spider):
-        return item
+    	if item['section']=='National':
+            print (item)
+            return item
