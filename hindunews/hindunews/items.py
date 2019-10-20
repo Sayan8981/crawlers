@@ -17,3 +17,4 @@ class Hindu_national_newsItem(scrapy.Item):
     country=scrapy.Field()
     date=scrapy.Field()
     updated_at=scrapy.Field()
+    news_url=scrapy.Field()
