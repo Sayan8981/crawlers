@@ -8,7 +8,12 @@
 import scrapy
 
 
-class HindunewsItem(scrapy.Item):
+class Hindu_national_newsItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
-    pass
+    news_headlines=scrapy.Field()
+    news_tagline=scrapy.Field()
+    news_details=scrapy.Field()
+    country=scrapy.Field()
+    date=scrapy.Field()
+    updated_at=scrapy.Field()
