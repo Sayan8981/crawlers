@@ -97,10 +97,10 @@ class hindunews(Spider):
         national_news_item=Hindu_national_newsItem()
         national_news_item['news_headlines']=(sel.xpath('//div[@class=" "]/h1/text()').extract())[0].strip("\n ")
         national_news_item['news_tagline']=sel.xpath(('//div[@class=" "]/h2/text()').extract())[0].strip("\n ")
-        national_news_item['news_details']=sel.xpath()
-        national_news_item['country']=sel.xpath()
-        national_news_item['date']=sel.xpath()
-        national_news_item['updated_at']=sel.xpath()
+        national_news_item['news_details']=''.join(data for data in sel.xpath('//div[@class=" "]/div[@id]/p/text()').extract()).strip(" ")
+        national_news_item['country']=sel.xpath('//div[@class=" "]/div/div[@class="ut-container"]/span/text()').extract()[0].strip("\n, ")
+        national_news_item['date']=sel.xpath('//div[@class=" "]/div/div[@class="ut-container"]/span/none/text()').extract()[0].strip("\n ")
+        national_news_item['updated_at']=sel.xpath('//div[@class=" "]/div/div[@class="ut-container"]/div/span/none/text()').extract()[0].strip("\n ")
 
 
 
