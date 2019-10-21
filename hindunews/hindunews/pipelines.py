@@ -18,7 +18,7 @@ class HindunewsPipeline(object):
         user=input(str)
         print("Enter your database password again....")
         passwd=input(str)
-        self.connection=MySQLdb.connect(host="localhost",user=user,passwd=passwd,db="Hindunews")
+        self.connection=MySQLdb.connect(host="localhost",user=user,passwd=passwd,db="Hindunews",charset="utf8", use_unicode=True)
         self.cursor=self.connection.cursor() 
         self.counter=0
 
