@@ -6,16 +6,19 @@
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 import pdb;pdb.set_trace()
 import MySQLdb
+#import mysql.connector
 import os
 import sys
-sys.path.insert(0,os.getcwd()+'/user_passwd_config')
-import user_passwd_config
-
 
 class HindunewsPipeline(object):
     def __init__(self):
+        #import pdb;pdb.set_trace()
         #super(CrawlerPipeline, self).__init__(self)
-        self.connection=MySQLdb.connect(host="localhost",user=user_passwd_config.username,passwd=user_passwd_config.passwd,db="Hindunews",charset="utf8", use_unicode=True)
+        print ("Enter your database username again.....")
+        user=input(str)
+        print("Enter your database password again....")
+        passwd=input(str)
+        self.connection=MySQLdb.connect(host="localhost",user=user,passwd=passwd,db="Hindunews")
         self.cursor=self.connection.cursor() 
 
     def process_item(self, item, spider):
