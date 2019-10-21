@@ -4,7 +4,7 @@
 #
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-import pdb;pdb.set_trace()
+#import pdb;pdb.set_trace()
 import MySQLdb
 #import mysql.connector
 import os
@@ -24,7 +24,7 @@ class HindunewsPipeline(object):
 
     def process_item(self, item, spider):
         if item['section']=='National':
-            print (item)
+            #print (item)
             self.query="insert into National_news_details (sk_key,News_headlines,News_intro,News_details,Country,Date,Updated_at,News_url) values (%s,%s,%s,%s,%s,%s,%s,%s)"
             self.cursor.execute(self.query,(item['sk_key'],item['news_headlines'],item['news_tagline'],item['news_details'],
                                           item['country'],item['date'],item['updated_at'],item['news_url']))
@@ -32,4 +32,6 @@ class HindunewsPipeline(object):
             self.connection.autocommit(True)
             print("\n")
             print ("Total commit: ", self.counter)
+            print("\n")
             return item
+        self.connection.close()    
