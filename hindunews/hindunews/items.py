@@ -10,13 +10,13 @@ import scrapy
 
 class Hindu_national_newsItem(scrapy.Item):
     # define the fields for your item here like:
-    # name = scrapy.Field()
     section=scrapy.Field()
     news_headlines=scrapy.Field()
     news_tagline=scrapy.Field()
     news_details=scrapy.Field()
     country=scrapy.Field()
-    date=scrapy.Field()
-    updated_at=scrapy.Field()
+    news_date=scrapy.Field()
+    news_updated_at=scrapy.Field()
     news_url=scrapy.Field()
     sk_key=scrapy.Field()
+    dump_updated_at=scrapy.Field()

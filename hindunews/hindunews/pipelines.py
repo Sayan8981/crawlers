@@ -24,9 +24,9 @@ class HindunewsPipeline(object):
     def process_item(self, item, spider):
         if item['section']=='National':
             #print (item)
-            self.query="insert into National_news_details (sk_key,News_headlines,News_intro,News_details,Country,Date,Updated_at,News_url) values (%s,%s,%s,%s,%s,%s,%s,%s)"
+            self.query="insert into National_news_details (sk_key,News_headlines,News_intro,News_details,Country,News_Date,News_Updated_at,News_url,Dump_updated_at) values (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
             self.cursor.execute(self.query,(item['sk_key'],item['news_headlines'],item['news_tagline'],item['news_details'],
-                                          item['country'],item['date'],item['updated_at'],item['news_url']))
+                                          item['country'],item['news_date'],item['news_updated_at'],item['news_url'],item['dump_updated_at']))
             self.counter+=1
             self.connection.autocommit(True)
             print("\n")

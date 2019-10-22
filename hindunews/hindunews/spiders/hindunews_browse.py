@@ -91,10 +91,11 @@ class hindunews(Spider):
         if national_news_item['news_details']=="":
             national_news_item['news_details']=''.join(data for data in sel.xpath(xpath.national_news_details_alternative_xpath).extract()).strip(" ").encode('ascii','ignore')
         national_news_item['country']=sel.xpath(xpath.national_news_country_xpath).extract()[0].strip("\n,: ").encode("ascii",'ignore')
-        national_news_item['date']=''.join(sel.xpath(xpath.national_news_date_xpath).extract()).strip("\n ").encode("ascii",'ignore')
-        national_news_item['updated_at']=''.join(sel.xpath(xpath.national_news_updatedDate_xpath).extract()).strip("\n ").encode("ascii",'ignore')
+        national_news_item['news_date']=''.join(sel.xpath(xpath.national_news_date_xpath).extract()).strip("\n ").encode("ascii",'ignore')
+        national_news_item['news_updated_at']=''.join(sel.xpath(xpath.national_news_updatedDate_xpath).extract()).strip("\n ").encode("ascii",'ignore')
         national_news_item['news_url']=headlines_url.url
         national_news_item['sk_key']=hashlib.md5(headlines_url.url.encode()).hexdigest()
+        national_news_item['dump_updated_at']=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         yield national_news_item
 
 
