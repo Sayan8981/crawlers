@@ -73,7 +73,7 @@ class hindunews(Spider):
             yield Request(url=headlines_urls,callback=self.national_news_details,dont_filter=True)
 
     def national_news_details(self,headlines_url):
-        #0import pdb;pdb.set_trace()
+        #import pdb;pdb.set_trace()
         sel=Selector(headlines_url)
         national_news_item=Hindu_national_newsItem()
         national_news_item['section']='National'
