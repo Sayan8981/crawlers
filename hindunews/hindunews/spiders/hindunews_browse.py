@@ -88,7 +88,7 @@ class hindunews(Spider):
         else:
             national_news_item['news_tagline']='None'                   
         national_news_item['news_details']=''.join(data for data in sel.xpath(xpath.national_news_details_xpath).extract()).strip(" ").encode('ascii','ignore')
-        national_news_item['country']=sel.xpath(xpath.national_news_country_xpath).extract()[0].strip("\n, ").encode("ascii",'ignore')
+        national_news_item['country']=sel.xpath(xpath.national_news_country_xpath).extract()[0].strip("\n,: ").encode("ascii",'ignore')
         national_news_item['date']=sel.xpath(xpath.national_news_date_xpath).extract()[0].strip("\n ")
         national_news_item['updated_at']=sel.xpath(xpath.national_news_updatedDate_xpath).extract()[0].strip("\n ").encode("ascii",'ignore')
         national_news_item['news_url']=headlines_url.url
