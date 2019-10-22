@@ -6,7 +6,7 @@ import hashlib
 from hindunews.items import *
 #import pdb;pdb.set_trace()
 print(sys.path)
-#import unidecode
+import datetime
 sys.path.insert(0,os.getcwd()+'/xpath')
 import xpath
 
@@ -73,7 +73,7 @@ class hindunews(Spider):
             yield Request(url=headlines_urls,callback=self.national_news_details,dont_filter=True)
 
     def national_news_details(self,headlines_url):
-        #import pdb;pdb.set_trace()
+        #0import pdb;pdb.set_trace()
         sel=Selector(headlines_url)
         national_news_item=Hindu_national_newsItem()
         national_news_item['section']='National'
@@ -91,7 +91,7 @@ class hindunews(Spider):
         if national_news_item['news_details']=="":
             national_news_item['news_details']=''.join(data for data in sel.xpath(xpath.national_news_details_alternative_xpath).extract()).strip(" ").encode('ascii','ignore')
         national_news_item['country']=sel.xpath(xpath.national_news_country_xpath).extract()[0].strip("\n,: ").encode("ascii",'ignore')
-        national_news_item['date']=''.join(sel.xpath(xpath.national_news_date_xpath).extract()).strip("\n ")
+        national_news_item['date']=''.join(sel.xpath(xpath.national_news_date_xpath).extract()).strip("\n ").encode("ascii",'ignore')
         national_news_item['updated_at']=''.join(sel.xpath(xpath.national_news_updatedDate_xpath).extract()).strip("\n ").encode("ascii",'ignore')
         national_news_item['news_url']=headlines_url.url
         national_news_item['sk_key']=hashlib.md5(headlines_url.url.encode()).hexdigest()

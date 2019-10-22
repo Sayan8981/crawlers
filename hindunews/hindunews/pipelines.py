@@ -13,7 +13,6 @@ import sys
 class HindunewsPipeline(object):
     def __init__(self):
         #import pdb;pdb.set_trace()
-        #super(CrawlerPipeline, self).__init__(self)
         print ("Enter your database username again.....")
         user=input(str)
         print("Enter your database password again....")
