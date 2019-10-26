@@ -4,21 +4,33 @@
 #
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-import pdb;pdb.set_trace()
+#import pdb;pdb.set_trace()
 import MySQLdb
+#import mysql.connector
 import os
 import sys
-sys.path.insert(0,os.getcwd()+'/user_passwd_config')
-import user_passwd_config
-
 
 class HindunewsPipeline(object):
     def __init__(self):
-        #super(CrawlerPipeline, self).__init__(self)
-        self.connection=MySQLdb.connect(host="localhost",user=user_passwd_config.username,passwd=user_passwd_config.passwd,db="Hindunews",charset="utf8", use_unicode=True)
+        #import pdb;pdb.set_trace()
+        print ("Enter your database username again.....")
+        user=input(str)
+        print("Enter your database password again....")
+        passwd=input(str)
+        self.connection=MySQLdb.connect(host="localhost",user=user,passwd=passwd,db="Hindunews",charset="utf8", use_unicode=True)
         self.cursor=self.connection.cursor() 
+        self.counter=0
 
     def process_item(self, item, spider):
         if item['section']=='National':
-            print (item)
+            #print (item)
+            self.query="insert into National_news_details (sk_key,News_headlines,News_intro,News_details,Country,News_Date,News_Updated_at,News_url,Dump_updated_at) values (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            self.cursor.execute(self.query,(item['sk_key'],item['news_headlines'],item['news_tagline'],item['news_details'],
+                                          item['country'],item['news_date'],item['news_updated_at'],item['news_url'],item['dump_updated_at']))
+            self.counter+=1
+            self.connection.autocommit(True)
+            print("\n")
+            print ("Total commit: ", self.counter)
+            print("\n")
             return item
+        self.connection.close()    

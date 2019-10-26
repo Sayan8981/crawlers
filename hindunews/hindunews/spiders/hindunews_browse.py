@@ -6,6 +6,7 @@ import hashlib
 from hindunews.items import *
 #import pdb;pdb.set_trace()
 print(sys.path)
+import datetime
 sys.path.insert(0,os.getcwd()+'/xpath')
 import xpath
 
@@ -42,30 +43,8 @@ class hindunews(Spider):
             #import pdb;pdb.set_trace()
             if '/national' in urls:
                 yield Request(url=urls,callback=self.parse_national_news_url,dont_filter=True)
-            elif '/international' in urls:
-                yield Request(url=urls,callback=self.parse_international_news_url,dont_filter=True)    
-            elif '/state' in urls:
-                yield Request(url=urls,callback=self.parse_states_news_url,dont_filter=True)
-            elif '/cities' in urls:
-                yield Request(url=urls,callback=self.parse_cities_news_url,dont_filter=True)
-            elif '/multimedia' in urls:
-                yield Request(url=urls,callback=self.parse_multimedia_news_url,dont_filter=True)
-            elif '/entertainment' in urls:
-                yield Request(url=urls,callback=self.parse_entertainment_news_url,dont_filter=True)
-            elif '/sport' in urls:
-                yield Request(url=urls,callback=self.parse_sports_news_url,dont_filter=True)
-            elif '/business' in urls :
-                yield Request(url=urls,callback=self.parse_business_news_url,dont_filter=True)
-            elif '/science' in urls:
-                yield Request(url=urls,callback=self.parse_science_news_url,dont_filter=True)
-            elif '/health' in urls:
-                yield Request(url=urls,callback=self.parse_health_news_url,dont_filter=True)
-            elif '/technology' in urls:
-                yield Request(url=urls,callback=self.parse_technology_news_url,dont_filter=True)
-            elif '/education' in urls:
-                yield Request(url=urls,callback=self.parse_education_news_url,dont_filter=True)
             else:
-                print ("The url is not valid",urls) 
+                print ("The url is not in consideration",urls) 
 
     def parse_national_news_url(self,national_news_page_url):
         #import pdb;pdb.set_trace()
@@ -98,44 +77,28 @@ class hindunews(Spider):
         sel=Selector(headlines_url)
         national_news_item=Hindu_national_newsItem()
         national_news_item['section']='National'
-        national_news_item['news_headlines']=(sel.xpath(xpath.national_news_headlines_xpath).extract())[0].strip("\n ")
+        national_news_item['news_headlines']=sel.xpath(xpath.national_news_headlines_xpath).extract()
+        if national_news_item['news_headlines']:
+            national_news_item['news_headlines']=''.join(national_news_item['news_headlines']).strip("\n ").encode('ascii','ignore')
+        else:
+            national_news_item['news_headlines']='None'    
         national_news_item['news_tagline']=sel.xpath(xpath.national_news_tagline_xpath).extract()
         if national_news_item['news_tagline']:
-            national_news_item['news_tagline']=national_news_item['news_tagline'][0].strip("\n ")  
+            national_news_item['news_tagline']=national_news_item['news_tagline'][0].strip("\n ").encode('ascii','ignore')  
         else:
             national_news_item['news_tagline']='None'                   
-        national_news_item['news_details']=''.join(data for data in sel.xpath(xpath.national_news_details_xpath).extract()).strip(" ")
-        national_news_item['country']=sel.xpath(xpath.national_news_country_xpath).extract()[0].strip("\n, ")
-        national_news_item['date']=sel.xpath(xpath.national_news_date_xpath).extract()[0].strip("\n ")
-        national_news_item['updated_at']=sel.xpath(xpath.national_news_updatedDate_xpath).extract()[0].strip("\n ")
+        national_news_item['news_details']=''.join(data for data in sel.xpath(xpath.national_news_details_xpath).extract()).strip(" ").encode('ascii','ignore')
+        if national_news_item['news_details']=="":
+            national_news_item['news_details']=''.join(data for data in sel.xpath(xpath.national_news_details_alternative_xpath).extract()).strip(" ").encode('ascii','ignore')
+        national_news_item['country']=sel.xpath(xpath.national_news_country_xpath).extract()[0].strip("\n,: ").encode("ascii",'ignore')
+        national_news_item['news_date']=''.join(sel.xpath(xpath.national_news_date_xpath).extract()).strip("\n ").encode("ascii",'ignore')
+        national_news_item['news_updated_at']=''.join(sel.xpath(xpath.national_news_updatedDate_xpath).extract()).strip("\n ").encode("ascii",'ignore')
         national_news_item['news_url']=headlines_url.url
         national_news_item['sk_key']=hashlib.md5(headlines_url.url.encode()).hexdigest()
+        national_news_item['dump_updated_at']=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         yield national_news_item
 
 
-    def parse_international_news_url(self,international_news_url):
-        pass
-
-    def parse_entertainment_news_url(self,entertainment_news_url):
-        pass    
-    def parse_states_news_url(self,states_news_url):
-        pass
-    def parse_cities_news_url(self,cities_news_url):
-        pass 
-    def parse_multimedia_news_url(self,multimedia_news_url):
-        pass 
-    def parse_sports_news_url(self,sports_news_url):
-        pass 
-    def parse_business_news_url(self,business_news_url):
-        pass 
-    def parse_science_news_url(self,science_news_url):
-        pass
-    def parse_health_news_url(self,health_news_url):
-        pass
-    def parse_technology_news_url(self,technology_news_url):
-        pass
-    def parse_education_news_url(self,education_news_url):
-        pass
 
 
                 

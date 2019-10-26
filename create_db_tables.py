@@ -33,7 +33,7 @@ class createdb_table:
             print("\n %s db created"%self.database) 
             self.cursor.execute("use %s;"%self.database)
             create_tables=["create table National_news_details (sk_key varchar(500) primary key, News_headlines varchar(1000), News_intro varchar(2000), News_details varchar(50000), Country varchar(100),Date varchar(100),Updated_at varchar(200), News_url varchar(1000));"]
-            for query in create_tables:
+            for query in create_tables: 
                 self.cursor.execute(query)  
             print("\n")    
             print("Table created.................")             
@@ -49,7 +49,7 @@ class createdb_table:
                 print ("table created.......")    
             else:
                 print ("\n")
-                print("Table is already exist in DB")
+                print("Table is already exist in DB",table_cursor)
         self.connection.close()        
                            
 
