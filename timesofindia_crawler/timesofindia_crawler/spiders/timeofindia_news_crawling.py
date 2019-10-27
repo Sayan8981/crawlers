@@ -42,7 +42,7 @@ class timeofindia_news_crawling(Spider):
     def parse_headlines_url(self,pages):
         print(pages.url)
         sel=Selector(pages)
-        news_headline_url=sel.xpath(xpath.news_headlines_url_xpath).extract()
+        news_headline_url=sel.xpath(xpath.news_headlines_url_xpath).extract()[1:]
         for headline_url in news_headline_url:
             news_headlines_link=self.start_urls[0]+headline_url
             yield Request(url=news_headlines_link,callback=self.scrape_new_details,dont_filter=True)
@@ -52,11 +52,12 @@ class timeofindia_news_crawling(Spider):
         sel=Selector(headlines_link)
         state_news_item=TimesofindiaCrawlerItem()
         state_news_item['state']=self.state
-        state_news_item['news_headlines']=sel.xpath(xpath.national_news_headlines_xpath).extract()
+        state_news_item['news_headlines']=sel.xpath(xpath.news_headlines_xpath).extract()
         if state_news_item['news_headlines']:
             state_news_item['news_headlines']=''.join(state_news_item['news_headlines']).strip("\n ").encode('ascii','ignore')
         else:
-            state_news_item['news_headlines']='None'    
+            state_news_item['news_headlines']=sel.xpath(xpath.news_headlines_alternative_xpath).extract()
+            state_news_item['news_headlines']=    
         state_news_item['news_tagline']=sel.xpath(xpath.national_news_tagline_xpath).extract()
         if state_news_item['news_tagline']:
             state_news_item['news_tagline']=state_news_item['news_tagline'][0].strip("\n ").encode('ascii','ignore')  
