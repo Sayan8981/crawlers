@@ -57,12 +57,7 @@ class timeofindia_news_crawling(Spider):
             state_news_item['news_headlines']=''.join(state_news_item['news_headlines']).strip("\n ").encode('ascii','ignore')
         else:
             state_news_item['news_headlines']=sel.xpath(xpath.news_headlines_alternative_xpath).extract()
-            state_news_item['news_headlines']=    
-        state_news_item['news_tagline']=sel.xpath(xpath.national_news_tagline_xpath).extract()
-        if state_news_item['news_tagline']:
-            state_news_item['news_tagline']=state_news_item['news_tagline'][0].strip("\n ").encode('ascii','ignore')  
-        else:
-            state_news_item['news_tagline']='None'                   
+            state_news_item['news_headlines']=''.join(state_news_item['news_headlines']).strip("\n ").encode('ascii','ignore')    
         state_news_item['news_details']=''.join(data for data in sel.xpath(xpath.national_news_details_xpath).extract()).strip(" ").encode('ascii','ignore')
         if state_news_item['news_details']=="":
             state_news_item['news_details']=''.join(data for data in sel.xpath(xpath.national_news_details_alternative_xpath).extract()).strip(" ").encode('ascii','ignore')
