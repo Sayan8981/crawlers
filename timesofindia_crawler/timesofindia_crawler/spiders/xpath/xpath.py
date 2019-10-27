@@ -11,3 +11,5 @@ news_headlines_url_xpath='//div/ul/li/span[@class="w_tle"]/a[@hid]/@href'
 
 news_headlines_xpath='//div[@class="fix_wrap_md clearfix"]/div/div[@class="as_heading"]/h1//text()'
 news_headlines_alternative_xpath='//div[@class="clearfix rel"]/div/div/h1//text()'
+news_details_xpath='//div[@class="clearfix rel"]/div/div[@class="_3WlLe clearfix  "]//text()'
+news_updated_xpath='//div[@class="clearfix rel"]/div/div/div/div/text()'

@@ -11,4 +11,12 @@ import scrapy
 class TimesofindiaCrawlerItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
-    pass
+    state=scrapy.Field()
+    news_headlines=scrapy.Field()
+    news_details=scrapy.Field()
+    city=scrapy.Field()
+    news_updated_at=scrapy.Field()
+    news_url=scrapy.Field()
+    sk_key=scrapy.Field()
+    dump_updated_at=scrapy.Field()
+    #pass
