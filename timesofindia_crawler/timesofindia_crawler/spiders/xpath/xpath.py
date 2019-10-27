@@ -10,3 +10,4 @@ news_headlines_url_xpath='//div/ul/li/span[@class="w_tle"]/a[@hid]/@href'
 ## news_detail_xpath:
 
 news_headlines_xpath='//div[@class="fix_wrap_md clearfix"]/div/div[@class="as_heading"]/h1//text()'
+news_headlines_alternative_xpath='//div[@class="clearfix rel"]/div/div/h1//text()'
