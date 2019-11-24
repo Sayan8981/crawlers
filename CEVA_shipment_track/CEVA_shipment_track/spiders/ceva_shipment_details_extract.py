@@ -17,7 +17,7 @@ class CEVA_shipment_track(Spider):
     start_urls=["https://etracking.cevalogistics.com/eTracking.aspx?uid="]
 
     def __init__(self):
-        self.input_id=["EC90009014"]
+        self.input_id=["EC90009356","EC90009210","EC90008803","EC90009014","EC90008855","EC90009003"]
         self.history_event_key=[]
         self.history_data_column=[]=''
         self.signature_remarks=''
@@ -61,7 +61,7 @@ class CEVA_shipment_track(Spider):
 
 
     def extract_data(self,response):
-        import pdb;pdb.set_trace()
+        #import pdb;pdb.set_trace()
         #print (response.body) 
         item=CevaShipmentTrackItem()
         item["history_data"]=[]
@@ -93,18 +93,9 @@ class CEVA_shipment_track(Spider):
         yield item 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 """
+**
+Sample input:
+
 ["EC90009356","EC90009210","EC90008803","EC90009014","EC90008855","EC90009003"]
 """
