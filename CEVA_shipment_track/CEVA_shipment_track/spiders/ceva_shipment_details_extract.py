@@ -91,6 +91,7 @@ class CEVA_shipment_track(Spider):
                 item["history_data"].append({data:','.join(response.xpath(xpath.history_data%data).extract()).replace('\xa0','').replace("\t",'').replace("\n",'').replace("\r",'').strip(", ").split(",")+[self.signature_remarks]})
             else:
                 item["history_data"].append({data:','.join(response.xpath(xpath.history_data%data).extract()).replace('\xa0','').replace("\t",'').replace("\n",'').replace("\r",'').strip(", ").split(",")})
+        print(item)        
         yield item 
 
 
