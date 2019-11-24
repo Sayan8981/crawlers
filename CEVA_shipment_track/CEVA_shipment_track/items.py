@@ -10,8 +10,6 @@ import scrapy
 
 class CevaShipmentTrackItem(scrapy.Item):
     # define the fields for your item here like:
-    # name = scrapy.Field()
-    #pass
     waybill_number=scrapy.Field()
     ship_date=scrapy.Field()
     due_date=scrapy.Field()
