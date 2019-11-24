@@ -17,10 +17,10 @@ class CEVA_shipment_track(Spider):
     start_urls=["https://etracking.cevalogistics.com/eTracking.aspx?uid="]
 
     def __init__(self):
-        self.input_id=["EC90009356","EC90009210","EC90008803","EC90009014","EC90008855","EC90009003"]
-        self.shipment_details=dict()
-        self.service_info=dict()
-        self.key_event_history=dict()
+        self.input_id=["EC90009014"]
+        self.history_event_key=[]
+        self.history_data_column=[]=''
+        self.signature_remarks=''
      
     def parse(self,response):
         #import pdb;pdb.set_trace()
@@ -61,9 +61,10 @@ class CEVA_shipment_track(Spider):
 
 
     def extract_data(self,response):
-        #import pdb;pdb.set_trace()
+        import pdb;pdb.set_trace()
         #print (response.body) 
         item=CevaShipmentTrackItem()
+        item["history_data"]=[]
         item["waybill_number"]=''.join(response.xpath('//td[contains(text(),"Waybill Number:")]/following-sibling::td/text()').extract())
         item["ship_date"]=''.join(response.xpath('//td[contains(text(),"Ship Date:")]/following-sibling::td/text()').extract())
         item["due_date"]=''.join(response.xpath('//td[contains(text(),"Due Date:")]/following-sibling::td/text()').extract())
@@ -80,13 +81,15 @@ class CEVA_shipment_track(Spider):
         item["delivery_type"]=''.join(response.xpath('//td[contains(text(),"Delivery Type:")]/following-sibling::td/text()').extract()).replace('\xa0',' ').replace("\t","").replace("\n","").replace("\r","").strip()
         item["movement_type"]=''.join(response.xpath('//td[contains(text(),"Movement Type:")]/following-sibling::td/text()').extract()).replace('\xa0',' ').replace("\t","").replace("\n","").replace("\r","").strip()
 
-        item["delivered"]=','.join(response.xpath('//td[contains(text(),"Delivered")]/following-sibling::td/text()').extract()).replace('\xa0','').replace("\t",'').replace("\n",'').replace("\r",'').strip(", ").split(",")
-        item["out_for_delivery"]=','.join(response.xpath('//td[contains(text(),"Out For Delivery")]/following-sibling::td/text()').extract()).replace('\xa0','').replace("\t","").replace("\n","").replace("\r","").strip(" ").split(",")
+        self.history_event_key=response.xpath('//td[contains(@class,"portlet-table-header")]/text()').extract()[0:5]
+        self.history_data_column=response.xpath('//table[tr[td[contains(text(),"Key Event History")]]]/following-sibling::table[2][@border="0"]/tr/td[1]/text()').extract()
 
-        item["pick_up"]=','.join(response.xpath('//td[contains(text(),"Pickup")]/following-sibling::td/text()').extract()).replace('\xa0','').replace("\t","").replace("\n","").replace("\r","").strip(" ").split(",")
-        item["booking_created"]=','.join(response.xpath('//td[contains(text(),"Booking Created")]/following-sibling::td/text()').extract()).replace('\xa0','').replace("\t","").replace("\n","").replace("\r","").strip(" ").split(",")
-
-        # print (self.key_event_history)
+        for data in self.history_data_column:
+            self.signature_remarks=','.join(response.xpath("//td[text()='%s']/following-sibling::td/a/text()"%data).extract()).replace('\xa0','').replace("\t",'').replace("\n",'').replace("\r",'').strip(", ")
+            if self.signature_remarks!='':
+                item["history_data"].append({data:','.join(response.xpath("//td[text()='%s']/following-sibling::td/text()"%data).extract()).replace('\xa0','').replace("\t",'').replace("\n",'').replace("\r",'').strip(", ").split(",")+[self.signature_remarks]})
+            else:
+                item["history_data"].append({data:','.join(response.xpath("//td[text()='%s']/following-sibling::td/text()"%data).extract()).replace('\xa0','').replace("\t",'').replace("\n",'').replace("\r",'').strip(", ").split(",")})
         yield item 
 
 

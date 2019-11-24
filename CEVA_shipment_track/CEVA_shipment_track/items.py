@@ -26,8 +26,4 @@ class CevaShipmentTrackItem(scrapy.Item):
     delivery_type=scrapy.Field()
     movement_type=scrapy.Field()
 
-    delivered=scrapy.Field()
-    out_for_delivery=scrapy.Field()
-    check_out_for_delivery=scrapy.Field()
-    pick_up=scrapy.Field()
-    booking_created=scrapy.Field()
+    history_data=scrapy.Field()
