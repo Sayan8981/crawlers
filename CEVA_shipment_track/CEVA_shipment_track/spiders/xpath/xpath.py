@@ -20,6 +20,7 @@ delivery_type_xpath='//td[contains(text(),"Delivery Type:")]/following-sibling::
 movement_type_xpath='//td[contains(text(),"Movement Type:")]/following-sibling::td/text()'
 
 history_data_column_xpath='//table[tr[td[contains(text(),"Key Event History")]]]/following-sibling::table[2][@border="0"]/tr/td[1]/text()'
+#history_data_column_xpath='//table[tr[td[contains(text(),"Key Event History")]]]/following-sibling::table[2]//tr//td'
 signature_remarks="//td[text()='%s']/following-sibling::td/a/text()"
 
 history_data="//td[text()='%s']/following-sibling::td/text()"
