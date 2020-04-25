@@ -12,3 +12,18 @@ class JustwatchCrawlerItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
     pass
+
+class MovieItem(scrapy.Item):
+    movie_id                    = scrapy.Field()
+    title                       = scrapy.Field()
+    original_title              = scrapy.Field()
+    description                 = scrapy.Field()
+    release_year                = scrapy.Field()
+    ott                         = scrapy.Field()
+    credits                     = scrapy.Field()
+    duration                    = scrapy.Field()
+    genres                      = scrapy.Field()
+    provider_id                 = scrapy.Field() 
+    service_name                = scrapy.Field() 
+    added_to_site               = scrapy.Field()
+    updated_at                  = scrapy.Field() 

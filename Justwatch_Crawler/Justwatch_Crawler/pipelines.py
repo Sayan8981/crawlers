@@ -4,8 +4,9 @@
 #
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-
+from Justwatch_Crawler.items import *
 
 class JustwatchCrawlerPipeline(object):
     def process_item(self, item, spider):
-        return item
+        if isinstance(item, MovieItem):
+            return item

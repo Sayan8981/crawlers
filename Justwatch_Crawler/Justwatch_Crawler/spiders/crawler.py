@@ -15,6 +15,7 @@ sys.path.insert(1,os.getcwd()+"/operation")
 # from db_output import db_output_stats
 # from send_mail import send_emails
 
+# TO crawl the keep-up content from Justwwatch (Hulu,Showtime,HBOGO)
 
 class justwatchbrowse(Spider):
 
@@ -70,9 +71,7 @@ class justwatchbrowse(Spider):
     def cleanup(self):
         self.movies_meta=dict()
         self.video_info=[]
-        self.video_info_dict=dict()
         self.credits_info=[]
-        self.credits_dict=dict()
         self.genres_info=[]
 
     def fetch_response_for_api(self,api):
@@ -81,7 +80,6 @@ class justwatchbrowse(Spider):
 
     #TODO: TO take the provider details
     def provider_browse(self,response):
-        #import pdb;pdb.set_trace()
         self.provider_response=json.loads(response.body.decode())
         for data in self.provider_response:
             if data["technical_name"]=="hulu" or data["technical_name"]=="hbogo" or data["technical_name"]=="showtime":
@@ -89,7 +87,7 @@ class justwatchbrowse(Spider):
         logging.info({"providers_details":self.provider_details})        
         yield FormRequest(str(response.url),callback=self.parse_providers,meta={"providers":self.provider_details},dont_filter= True) 
    
-    #TODO: parsing the providers of movies and shows to get Data
+    #TODO: parsing the providers of movies and shows browse to get Data
     def parse_providers(self,response):
         logging.info (response.meta)
         yield FormRequest(url=response.url,callback=self.justwatch_movie_browse,meta=response.meta,dont_filter=True)
@@ -122,31 +120,38 @@ class justwatchbrowse(Spider):
             else:
                 logging.info("Tvshow_response status", resp.status_code)  
 
+    #TODO: Browse to get only movie_sk and date 
     def justwatch_movies_terminal(self,response):            
         try:
             movie_data=response.meta["data"]["days"]
-            for data in movie_data:
-                self.date=data["date"]
-                self.item_id=data["providers"][0]["items"][0]["id"]
-                print ({"date":self.date,"id":self.item_id})
-                yield FormRequest(url=response.url,callback=self.justwatch_movies_meta,meta={"provider_details":response.meta,"date":self.date,"movie_sk":self.item_id})
+            if movie_data:
+                for data in movie_data:
+                    self.date=data["date"]
+                    self.item_id=data["providers"][0]["items"][0]["id"]
+                    yield FormRequest(url=response.url,callback=self.justwatch_movies_meta,meta={"provider_details":response.meta,"date":self.date,"movie_sk":self.item_id})
+            else:
+                logging.info("No movies are available today .................")        
         except Exception as error:
             logging.info("Exception caught .......", error, type(error),response.url)                
 
+    #TODO: to get OTT related info
     def get_ott_link_info(self,ott_info):
         if ott_info:
             for info in ott_info:
+                self.video_info_dict=dict()
                 self.video_info_dict["urls"]=info["urls"]
                 self.video_info_dict["quality"]=info["presentation_type"]
                 self.video_info_dict["currency"]=info["currency"]
-                self.movie_video_info.append(self.video_info_dict)
+                self.video_info.append(self.video_info_dict)
             return self.video_info
         else:
             return self.video_info        
 
+    #TODO: To get credits related info  
     def get_credits_info(self,credits_info):
         if credits_info:
             for info in credits_info:
+                self.credits_dict=dict()
                 self.credits_dict["role"]=info["role"]
                 self.credits_dict["name"]=unidecode.unidecode(pinyin.get(info["name"]))
                 self.credits_info.append(self.credits_dict)
@@ -154,12 +159,13 @@ class justwatchbrowse(Spider):
         else:
             return self.credits_info   
 
+    #TODO: To get genres related info 
     def get_genres_info(self,genre_ids):
         if genre_ids:
             genres_response=self.fetch_response_for_api(self.genres_api)
             if genres_response.status_code==200:
                 for ids in genre_ids:
-                    for data in genres_response:
+                    for data in json.loads(genres_response.text):
                         if data["id"]==ids:
                             self.genres_info.append(data["translation"])
                 return self.genres_info
@@ -168,14 +174,16 @@ class justwatchbrowse(Spider):
         else:
             return self.genres_info
 
+    #TODO: TO get movies meta data 
     def get_movies_info(self,movie_url):
         movie_response=self.fetch_response_for_api(movie_url)
         if movie_response.status_code==200:
+            movie_response=json.loads(movie_response.text)
             self.movies_meta["movie_id"]=movie_response["id"]   
-            self.movies_meta["title"]=movie_response["title"]
-            self.movies_meta["description"]=movie_response["short_description"]
+            self.movies_meta["title"]=unidecode.unidecode(pinyin.get(movie_response["title"]))
+            self.movies_meta["description"]=unidecode.unidecode(pinyin.get(movie_response["short_description"]))
             self.movies_meta["release_year"]=movie_response["original_release_year"]
-            self.movies_meta["original_title"]=movie_response["original_title"]
+            self.movies_meta["original_title"]=unidecode.unidecode(pinyin.get(movie_response["original_title"]))
             self.movies_meta["ott"]=self.get_ott_link_info(movie_response["offers"])
             self.movies_meta["credits"]=self.get_credits_info(movie_response["credits"])  
             self.movies_meta["duration"]=movie_response["runtime"]
@@ -184,14 +192,31 @@ class justwatchbrowse(Spider):
         else:
             return self.movies_meta     
 
+    #TODO: Browse the metadata fo movies 
     def justwatch_movies_meta(self,response): 
         self.cleanup()       
         movies_sk=response.meta["movie_sk"]
-        movie_meta_url=self.movies_meta_url%movie_sk
-        movie_meta_info=self.get_movies_info(movies_meta_url)
+        movie_meta_url=self.movies_meta_url%movies_sk
+        movie_meta_info=self.get_movies_info(movie_meta_url)
         if movie_meta_info!={}:
-            
-
+            yield FormRequest(url=str(movie_meta_url),callback=self.movies_item_stored,meta={"provider_details":response.meta,"data":movie_meta_info})
 
     def justwatch_tvshow_terminal(self,response):
         pass 
+
+    def movies_item_stored(self,response):
+        item=MovieItem()
+        item["movie_id"] = response.meta["data"]["movie_id"]
+        item["title"] = response.meta["data"]["title"]
+        item["original_title"] = response.meta["data"]["original_title"]
+        item["description"] = response.meta["data"]["description"]
+        item["release_year"] = response.meta["data"]["release_year"]
+        item["ott"] = response.meta["data"]["ott"]
+        item["credits"] = response.meta["data"]["credits"]
+        item["duration"] = response.meta["data"]["duration"]
+        item["genres"] = response.meta["data"]["genres"] 
+        item["provider_id"] = response.meta["provider_details"]["provider_details"]["provider_id"]
+        item["service_name"] = response.meta["provider_details"]["provider_details"]["service_name"]
+        item["added_to_site"] = response.meta["provider_details"]["date"]
+        logging.info(item)
+        yield item
