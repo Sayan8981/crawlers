@@ -29,6 +29,7 @@ class justwatchbrowse(Spider):
         self.movies_meta_url=self.allowed_domain[0]+"content/titles/movie/%s/locale/en_US"
         self.series_meta_url=self.allowed_domain[0]+"content/titles/show/%s/locale/en_US"
         self.season_meta_url=self.allowed_domain[0]+"content/titles/show_season/%s/locale/en_US"
+        self.genres_api=self.allowed_domain[0]+"content/genres/locale/en_US"
 
     #initialization:
     def __init__(self):
@@ -36,6 +37,14 @@ class justwatchbrowse(Spider):
         self.provider_response=""
         self.provider_details=[]
         self.providers_list=[]
+        self.date=''
+        self.item_id=0
+        self.movies_meta=dict()
+        self.video_info_dict=dict()
+        self.video_info=[]
+        self.credits_info=[]
+        self.credits_dict=dict()
+        self.genres_info=[]
                     
     def start_requests(self):
         #import pdb;pdb.set_trace()
@@ -59,7 +68,16 @@ class justwatchbrowse(Spider):
         # send_emails().main()
 
     def cleanup(self):
-        pass
+        self.movies_meta=dict()
+        self.video_info=[]
+        self.video_info_dict=dict()
+        self.credits_info=[]
+        self.credits_dict=dict()
+        self.genres_info=[]
+
+    def fetch_response_for_api(self,api):
+        response=requests.request("GET",api, data={},headers={})
+        return response   
 
     #TODO: TO take the provider details
     def provider_browse(self,response):
@@ -83,7 +101,7 @@ class justwatchbrowse(Spider):
         for data in self.providers_list:
             provider=data["provider"]
             movie_url=self.api_url%("movie",str(provider),eval(datetime.now().strftime("%Y")))
-            resp=requests.request("GET",movie_url, data={},headers={})
+            resp=self.fetch_response_for_api(movie_url)
             if resp.status_code == 200:
                 #import pdb;pdb.set_trace()
                 movie_response=json.loads(resp.text)
@@ -97,16 +115,83 @@ class justwatchbrowse(Spider):
         for data in self.providers_list:
             provider=data["provider"]  
             show_url=self.api_url%("show",str(provider),eval(datetime.now().strftime("%Y")))
-            resp=requests.request("GET",show_url, data={},headers={})
+            resp=self.fetch_response_for_api(show_url)
             if resp.status_code == 200:
-                #import pdb;pdb.set_trace()
                 show_response=json.loads(resp.text)
                 yield FormRequest(url=str(show_url),callback=self.justwatch_tvshow_terminal,meta={"provider":data["provider"],"provider_id":data["provider_id"],"service_name":data["service_name"],'data':show_response},dont_filter=True)
             else:
                 logging.info("Tvshow_response status", resp.status_code)  
 
     def justwatch_movies_terminal(self,response):            
-        logging.info(response.meta) 
+        try:
+            movie_data=response.meta["data"]["days"]
+            for data in movie_data:
+                self.date=data["date"]
+                self.item_id=data["providers"][0]["items"][0]["id"]
+                print ({"date":self.date,"id":self.item_id})
+                yield FormRequest(url=response.url,callback=self.justwatch_movies_meta,meta={"provider_details":response.meta,"date":self.date,"movie_sk":self.item_id})
+        except Exception as error:
+            logging.info("Exception caught .......", error, type(error),response.url)                
+
+    def get_ott_link_info(self,ott_info):
+        if ott_info:
+            for info in ott_info:
+                self.video_info_dict["urls"]=info["urls"]
+                self.video_info_dict["quality"]=info["presentation_type"]
+                self.video_info_dict["currency"]=info["currency"]
+                self.movie_video_info.append(self.video_info_dict)
+            return self.video_info
+        else:
+            return self.video_info        
+
+    def get_credits_info(self,credits_info):
+        if credits_info:
+            for info in credits_info:
+                self.credits_dict["role"]=info["role"]
+                self.credits_dict["name"]=unidecode.unidecode(pinyin.get(info["name"]))
+                self.credits_info.append(self.credits_dict)
+            return self.credits_info
+        else:
+            return self.credits_info   
+
+    def get_genres_info(self,genre_ids):
+        if genre_ids:
+            genres_response=self.fetch_response_for_api(self.genres_api)
+            if genres_response.status_code==200:
+                for ids in genre_ids:
+                    for data in genres_response:
+                        if data["id"]==ids:
+                            self.genres_info.append(data["translation"])
+                return self.genres_info
+            else:
+                return self.genres_info     
+        else:
+            return self.genres_info
+
+    def get_movies_info(self,movie_url):
+        movie_response=self.fetch_response_for_api(movie_url)
+        if movie_response.status_code==200:
+            self.movies_meta["movie_id"]=movie_response["id"]   
+            self.movies_meta["title"]=movie_response["title"]
+            self.movies_meta["description"]=movie_response["short_description"]
+            self.movies_meta["release_year"]=movie_response["original_release_year"]
+            self.movies_meta["original_title"]=movie_response["original_title"]
+            self.movies_meta["ott"]=self.get_ott_link_info(movie_response["offers"])
+            self.movies_meta["credits"]=self.get_credits_info(movie_response["credits"])  
+            self.movies_meta["duration"]=movie_response["runtime"]
+            self.movies_meta["genres"]=self.get_genres_info(movie_response["genre_ids"])
+            return self.movies_meta
+        else:
+            return self.movies_meta     
+
+    def justwatch_movies_meta(self,response): 
+        self.cleanup()       
+        movies_sk=response.meta["movie_sk"]
+        movie_meta_url=self.movies_meta_url%movie_sk
+        movie_meta_info=self.get_movies_info(movies_meta_url)
+        if movie_meta_info!={}:
+            
+
 
     def justwatch_tvshow_terminal(self,response):
-        logging.info(response.meta)     
+        pass 
