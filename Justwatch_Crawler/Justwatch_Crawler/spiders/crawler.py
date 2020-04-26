@@ -129,8 +129,9 @@ class justwatchbrowse(Spider):
             if movie_data:
                 for data in movie_data:
                     self.date=data["date"]
-                    self.item_id=data["providers"][0]["items"][0]["id"]
-                    yield FormRequest(url=response.url,callback=self.justwatch_movies_meta,meta={"provider_details":response.meta,"date":self.date,"movie_sk":self.item_id,},dont_filter=True)
+                    for items in data["providers"][0]["items"]:
+                        self.item_id=items["id"]
+                        yield FormRequest(url=response.url,callback=self.justwatch_movies_meta,meta={"provider_details":response.meta,"date":self.date,"movie_sk":self.item_id,},dont_filter=True)
             else:
                 logging.info("No movies are available today .................")        
         except Exception as error:
