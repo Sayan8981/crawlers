@@ -9,6 +9,7 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 import os,logging
+from twisted.internet import defer, protocol, reactor # the reactor
 
 PROJECT_DIR = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
 
@@ -91,6 +92,7 @@ logging.getLogger().addHandler(logging.StreamHandler())
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
 AUTOTHROTTLE_ENABLED = True
+TELNETCONSOLE_ENABLED=False
 # The initial download delay
 #AUTOTHROTTLE_START_DELAY = 5
 # The maximum download delay to be set in case of high latencies
