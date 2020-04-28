@@ -2,4 +2,7 @@
 username='root'
 passwd='root@123'
 IP_addr='localhost'
-database_name='JUSTWATCHDB'
+database_name='JUSTWATCHKEEPUPDB'
+movie_table='Movies'
+Series_table='TvSeries'
+Episodes_table='Episodes'

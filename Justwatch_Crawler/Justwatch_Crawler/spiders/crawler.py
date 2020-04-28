@@ -42,15 +42,17 @@ class justwatchbrowse(Spider):
         self.date=''
         self.item_id=0
         self.movies_meta=dict()
+        self.series_meta=dict()
         self.video_info_dict=dict()
         self.video_info=[]
         self.credits_info=[]
         self.credits_dict=dict()
         self.genres_info=[]
         self.rating_info=[]
-                    
+        self.show_id=0
+        self.season=''
+        
     def start_requests(self):
-        #import pdb;pdb.set_trace()
         url = self.providers_url
         yield FormRequest(str(url), callback = self.provider_browse, dont_filter=True)
 
@@ -72,14 +74,24 @@ class justwatchbrowse(Spider):
 
     def cleanup(self):
         self.movies_meta=dict()
+        self.series_meta=dict()
         self.video_info=[]
         self.credits_info=[]
         self.genres_info=[]
         self.rating_info=[]
 
+    #TODO: To fetch the response of requested API
     def fetch_response_for_api(self,api):
-        response=requests.request("GET",api, data={},headers={})
-        return response   
+        try:
+            retry_count=0
+            response=requests.request("GET",api, data={},headers={})
+            return response
+        except (requests.exceptions.RequestException,TimeoutError, ConnectionError) as error:
+            retry_count+=1
+            if retry_count <5:
+                self.fetch_response_for_api(api)
+            else:
+                retry_count=0           
 
     #TODO: TO take the provider details
     def provider_browse(self,response):
@@ -182,8 +194,8 @@ class justwatchbrowse(Spider):
         else:
             return self.genres_info
 
+    #TODO: To get rating info
     def get_rating_info(self,rating_info):
-        #import pdb;pdb.set_trace()
         if rating_info:
             for info in rating_info:
                 if "meter" in info["provider_type"] or "score" in info["provider_type"]:
@@ -199,6 +211,7 @@ class justwatchbrowse(Spider):
             movie_response = json.loads(movie_response.text)
             self.movies_meta["movie_id"] = movie_response["id"]   
             self.movies_meta["title"] = unidecode.unidecode(pinyin.get(movie_response["title"]))
+            self.movies_meta["show_type"]=movie_response["object_type"].capitalize()
             self.movies_meta["description"] = unidecode.unidecode(pinyin.get(movie_response["short_description"]))
             self.movies_meta["release_year"] = movie_response["original_release_year"]
             try:
@@ -236,20 +249,104 @@ class justwatchbrowse(Spider):
     #TODO: Browse the metadata fo movies 
     def justwatch_movies_meta(self,response): 
         self.cleanup()  
-        movies_sk=response.meta["movie_sk"]
-        movie_meta_url=self.movies_meta_url%movies_sk
-        movie_meta_info=self.get_movies_info(movie_meta_url)
-        if movie_meta_info!={}:
+        movies_sk = response.meta["movie_sk"]
+        movie_meta_url = self.movies_meta_url%movies_sk
+        movie_meta_info = self.get_movies_info(movie_meta_url)
+        if movie_meta_info!= {}:
             yield FormRequest(url=str(movie_meta_url),callback=self.movies_item_stored,meta={"provider_details":response.meta,"data":movie_meta_info},dont_filter=True)
 
+    #TODO: To get series sk info
     def justwatch_tvshow_terminal(self,response):
-        pass 
+        try:
+            series_data=response.meta["data"]["days"]
+            if series_data:
+                for data in series_data:
+                    self.date = data["date"]
+                    for item in data["providers"][0]["items"]:
+                        try:
+                            self.show_id = item["show_id"]
+                            self.season = item["title"]
+                            yield FormRequest(url=response.url,callback=self.justwatch_series_meta,meta={"provider_details":response.meta,"date":self.date,"tvshow_sk":self.show_id,"season":self.season},dont_filter=True)
+                        except KeyError:
+                            pass    
+            else:
+                logging.info("No series_data are available today .............")            
+        except Exception as error:
+            logging.info("Exception caught justwatch_tvshow_terminal.......", error, type(error),response.url)  
 
-    #TODO: storing required field though items file 
+    #TODO: to get series meta data
+    def get_series_info(self,series_url,season_title):
+        show_response = self.fetch_response_for_api(series_url)
+        if show_response.status_code == 200:
+            show_response = json.loads(show_response.text)
+            self.series_meta["show_title"] = unidecode.unidecode(pinyin.get(show_response["title"]))
+            self.series_meta["description"] =unidecode.unidecode(pinyin.get(show_response["short_description"]))
+            self.series_meta["release_year"] = show_response["original_release_year"]
+            self.series_meta["show_type"] = show_response ["object_type"]
+            self.series_meta["original_title"] = show_response["original_title"]
+            try:
+                self.series_meta["rating"] = self.get_rating_info(show_response["scoring"])
+            except KeyError:
+                self.series_meta["rating"] = "Null"
+            try:
+                self.series_meta["age_rating"] = show_response["age_certification"]
+            except KeyError:
+                self.series_meta["age_rating"] = "Null"    
+            try:        
+                self.series_meta["credits"] = self.get_credits_info(show_response["credits"])  
+            except KeyError:
+                self.series_meta["credits"] = "Null"    
+            try:       
+                self.series_meta["genres"] = self.get_genres_info(show_response["genre_ids"])
+            except KeyError:
+                self.series_meta["genres"] = "Null"
+            for seasons in show_response["seasons"]:
+                if seasons["title"] == season_title:     
+                    self.series_meta["season_sk"] = seasons["id"]
+                    self.series_meta["season_number"] = seasons["season_number"]
+            return self.series_meta        
+        else:
+            return self.series_meta                
+
+    def justwatch_episode_meta(self,season_id):
+        pass
+
+    #TODO: Browse the metadata fo series
+    def justwatch_series_meta(self,response):
+        self.cleanup()
+        show_sk = response.meta["tvshow_sk"]
+        show_meta_url = self.series_meta_url%show_sk 
+        show_meta_info = self.get_series_info(show_meta_url,response.meta["season"])
+        if show_meta_info != {}:
+            self.justwatch_episode_meta(show_meta_info["season_sk"])
+            yield FormRequest(url=str(show_meta_url),callback=self.series_item_stored,meta={"provider_details":response.meta,"data":show_meta_info,"series_sk":show_sk},dont_filter=True)
+    
+    #TODO: storing required field though items file Series
+    def series_item_stored(self,response):
+        item=SeriesItem()
+        item["series_id"] = response.meta["series_sk"]
+        item["title"] = response.meta["data"]["show_title"]
+        item["show_type"] = response.meta["data"]["show_type"]
+        item["original_title"] = response.meta["data"]["original_title"]
+        item["description"] = response.meta["data"]["description"]
+        item["release_year"] = response.meta["data"]["release_year"]
+        item["credits"] = response.meta["data"]["credits"]
+        item["rating"] = response.meta["data"]["rating"]
+        item["genres"] = response.meta["data"]["genres"] 
+        item["season_id"] = response.meta["data"]["season_sk"]
+        item["season_number"] = response.meta["data"]["season_number"]
+        item["age_rating"] = response.meta["data"]["age_rating"]
+        item["service_name"] = response.meta["provider_details"]["provider_details"]["service_name"]
+        item["added_to_site"] = response.meta["provider_details"]["date"]
+        item["updated_at"] = datetime.now().strftime("%d-%m-%Y")
+        yield item
+
+    #TODO: storing required field though items file movies
     def movies_item_stored(self,response):
         item=MovieItem()
         item["movie_id"] = response.meta["data"]["movie_id"]
         item["title"] = response.meta["data"]["title"]
+        item["show_type"] = response.meta["data"]["show_type"]
         item["original_title"] = response.meta["data"]["original_title"]
         item["description"] = response.meta["data"]["description"]
         item["release_year"] = response.meta["data"]["release_year"]
@@ -259,10 +356,7 @@ class justwatchbrowse(Spider):
         item["duration"] = response.meta["data"]["duration"]
         item["genres"] = response.meta["data"]["genres"] 
         item["age_rating"] = response.meta["data"]["age_rating"]
-        item["provider_id"] = response.meta["provider_details"]["provider_details"]["provider_id"]
         item["service_name"] = response.meta["provider_details"]["provider_details"]["service_name"]
         item["added_to_site"] = response.meta["provider_details"]["date"]
         item["updated_at"] = datetime.now().strftime("%d-%m-%Y")
-        logging.info("\n")
-        logging.info(item)
         yield item
