@@ -46,3 +46,17 @@ class SeriesItem(scrapy.Item):
     service_name                = scrapy.Field()
     added_to_site               = scrapy.Field()
     updated_at                  = scrapy.Field()
+
+
+class EpisodeItem(scrapy.Item):
+    series_id                   = scrapy.Field()
+    season_id                   = scrapy.Field()  
+    title                       = scrapy.Field()
+    description                 = scrapy.Field()
+    show_type                   = scrapy.Field()
+    ott                         = scrapy.Field()
+    duration                    = scrapy.Field()
+    season_number               = scrapy.Field()
+    episode_number              = scrapy.Field()    
+    service_name                = scrapy.Field()
+    updated_at                  = scrapy.Field()       

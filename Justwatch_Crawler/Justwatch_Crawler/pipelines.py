@@ -12,6 +12,7 @@ class JustwatchCrawlerPipeline(object):
     def __init__(self):
         self.counter_movies=0
         self.counter_series=0
+        self.counter_episode=0
 
     def process_item(self, item, spider):
         if isinstance(item, MovieItem):
@@ -26,4 +27,12 @@ class JustwatchCrawlerPipeline(object):
             logging.info({"Total data count series": self.counter_series})
             logging.info("\n")
             logging.info(item)
-            return item    
+            return item 
+
+        elif isinstance(item, EpisodeItem):
+            self.counter_episode+=1
+            logging.info({"Total data count episodes": self.counter_episode})
+            logging.info("\n")
+            logging.info(item)
+            return item
+                   

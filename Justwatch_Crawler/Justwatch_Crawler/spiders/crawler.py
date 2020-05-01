@@ -75,6 +75,7 @@ class justwatchbrowse(Spider):
     def cleanup(self):
         self.movies_meta=dict()
         self.series_meta=dict()
+        self.episode_meta=dict()
         self.video_info=[]
         self.credits_info=[]
         self.genres_info=[]
@@ -86,7 +87,7 @@ class justwatchbrowse(Spider):
             retry_count=0
             response=requests.request("GET",api, data={},headers={})
             return response
-        except (requests.exceptions.RequestException,TimeoutError, ConnectionError) as error:
+        except (TimeoutError, ConnectionError) as error:
             retry_count+=1
             if retry_count <5:
                 self.fetch_response_for_api(api)
@@ -154,7 +155,7 @@ class justwatchbrowse(Spider):
         if ott_info:
             for info in ott_info:
                 self.video_info_dict=dict()
-                self.video_info_dict["urls"]=info["urls"]
+                self.video_info_dict["urls"]=info["urls"]["standard_web"]
                 self.video_info_dict["quality"]=info["presentation_type"]
                 self.video_info_dict["currency"]=info["currency"]
                 try:
@@ -212,7 +213,10 @@ class justwatchbrowse(Spider):
             self.movies_meta["movie_id"] = movie_response["id"]   
             self.movies_meta["title"] = unidecode.unidecode(pinyin.get(movie_response["title"]))
             self.movies_meta["show_type"]=movie_response["object_type"].capitalize()
-            self.movies_meta["description"] = unidecode.unidecode(pinyin.get(movie_response["short_description"]))
+            try:
+                self.movies_meta["description"] = unidecode.unidecode(pinyin.get(movie_response["short_description"]))
+            except KeyError:
+                self.movies_meta["description"] = "Nil"                    
             self.movies_meta["release_year"] = movie_response["original_release_year"]
             try:
                 self.movies_meta["original_title"] = unidecode.unidecode(pinyin.get(movie_response["original_title"]))
@@ -280,10 +284,16 @@ class justwatchbrowse(Spider):
         if show_response.status_code == 200:
             show_response = json.loads(show_response.text)
             self.series_meta["show_title"] = unidecode.unidecode(pinyin.get(show_response["title"]))
-            self.series_meta["description"] =unidecode.unidecode(pinyin.get(show_response["short_description"]))
+            try:
+                self.series_meta["description"] =unidecode.unidecode(pinyin.get(show_response["short_description"]))
+            except KeyError:
+                self.series_meta["description"] = "Null"   
             self.series_meta["release_year"] = show_response["original_release_year"]
             self.series_meta["show_type"] = show_response ["object_type"]
-            self.series_meta["original_title"] = show_response["original_title"]
+            try:
+                self.series_meta["original_title"] = show_response["original_title"]
+            except KeyError:
+                self.series_meta["original_title"] = ""    
             try:
                 self.series_meta["rating"] = self.get_rating_info(show_response["scoring"])
             except KeyError:
@@ -308,18 +318,79 @@ class justwatchbrowse(Spider):
         else:
             return self.series_meta                
 
-    def justwatch_episode_meta(self,season_id):
-        pass
+    def get_episodes_info(self,episodes):
+        try:
+            self.episode_meta["title"] = unidecode.unidecode(pinyin.get(episodes["title"]))
+        except KeyError:
+            self.episode_meta["title"] = ""     
+        try:
+            self.episode_meta["description"] = unidecode.unidecode(pinyin.get(episodes["short_description"]))
+        except KeyError:
+            self.episode_meta["description"] = "Null"   
+        self.episode_meta["show_type"] = episodes["object_type"]
+        try:    
+            self.episode_meta["ott"] = self.get_ott_link_info(episodes["offers"])
+        except KeyError:
+            self.episode_meta["ott"] = []
+        try:
+            self.episode_meta["duration"] = episodes["runtime"]
+        except KeyError:
+            self.episode_meta["duration"] = ""
+        try:    
+            self.episode_meta["season_number"] = episodes["season_number"]
+        except KeyError:
+            self.episode_meta["season_number"] = "0"
+        try: 
+            self.episode_meta["episode_number"] = episodes["episode_number"]    
+        except KeyError:
+            self.episode_meta["episode_number"] = "0"
+        return self.episode_meta        
 
     #TODO: Browse the metadata fo series
     def justwatch_series_meta(self,response):
         self.cleanup()
         show_sk = response.meta["tvshow_sk"]
-        show_meta_url = self.series_meta_url%show_sk 
+        show_meta_url =  self.series_meta_url%show_sk 
         show_meta_info = self.get_series_info(show_meta_url,response.meta["season"])
         if show_meta_info != {}:
-            self.justwatch_episode_meta(show_meta_info["season_sk"])
-            yield FormRequest(url=str(show_meta_url),callback=self.series_item_stored,meta={"provider_details":response.meta,"data":show_meta_info,"series_sk":show_sk},dont_filter=True)
+            yield FormRequest(url=str(show_meta_url),callback=self.justwatch_episode_meta,meta={"provider_details":response.meta,"season_id":show_meta_info["season_sk"],"series_id":show_sk},dont_filter=True)
+            yield FormRequest(url=str(show_meta_url),callback=self.series_item_stored,meta={"provider_details":response.meta,"data":show_meta_info,"series_sk":show_sk,},dont_filter=True)
+
+    #TODO: Browse the metadata fo Episode
+    def justwatch_episode_meta(self,response):
+        season_id = response.meta["season_id"]
+        series_id = response.meta["series_id"]
+        season_meta_url = self.season_meta_url%str(season_id)
+        episode_response=self.fetch_response_for_api(season_meta_url)
+        if episode_response.status_code == 200:
+            try:
+                episode_response = json.loads(episode_response.text)["episodes"]
+            except KeyError:
+                episode_response = []
+                return self.episode_meta
+            for episodes in episode_response:
+                self.cleanup()
+                episode_meta_info=self.get_episodes_info(episodes)
+                if episode_meta_info != {}:
+                    yield FormRequest(url=str(season_meta_url),callback=self.episodes_item_stored,meta={"provider_details":response.meta,"season_id":season_id,"data":episode_meta_info,"series_sk":series_id},dont_filter=True)        
+        else:
+            return self.episode_meta            
+    
+    #TODO: storing required field though items file Episodes
+    def episodes_item_stored(self,response):
+        item=EpisodeItem()
+        item["series_id"] = response.meta["series_sk"]
+        item["season_id"] = response.meta["season_id"]  
+        item["title"] = response.meta["data"]["title"]
+        item["description"] = response.meta["data"]["description"]
+        item["show_type"] = response.meta["data"]["show_type"]
+        item["ott"] = response.meta["data"]["ott"]
+        item["duration"] = response.meta["data"]["duration"]
+        item["season_number"] = response.meta["data"]["season_number"]
+        item["episode_number"] = response.meta["data"]["episode_number"]
+        item["service_name"] = response.meta["provider_details"]["provider_details"]["provider_details"]["service_name"]
+        item["updated_at"] = datetime.now().strftime("%d-%m-%Y")
+        yield item 
     
     #TODO: storing required field though items file Series
     def series_item_stored(self,response):
