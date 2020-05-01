@@ -1,8 +1,8 @@
 import smtplib,ssl
 import sys
 import os
-import socket
-import csv
+import socket,logging
+import openpyxl as xl
 import ntpath
 from datetime import datetime,timedelta
 from email.mime.base import MIMEBase 
@@ -16,27 +16,26 @@ class send_emails:
         self.sender_email=''
         self.receiver_email=''
         self.password=''
+        self.sheet_row=0
+        self.sheets=["Movies,Series,Episodes"]
 
     def user_input(self):
         self.sender_email="saayan@headrun.com"
-        self.receiver_email=["hott@headrun.com"]
-        #self.cc=["saayan@headrun.com"]
-        #self.bcc=["**********"]
+        self.receiver_email=["saayan8981@gmail.com"]
         self.password="9891274567"
 
     def user_message(self):
         text="""Hi Team,
 
 
-    Instantwatcher recently added content Amazon service with Subscription [New Prime, New Rental, Purchase].
+    Justwatch Keepup contents for the service HBOGO,Showtime,Hulu.
         
-    Please find the attachment.
+    Please find the attachment. 
 
-    
 
 
     With best regards,
-    Saayan Das, """
+    Saayan Das,"""
     
         return text  
 
@@ -58,36 +57,36 @@ class send_emails:
         #import pdb;pdb.set_trace()
         self.user_input()
         message=MIMEMultipart("alternative")
-        message["Subject"]="Instantwatcher Amazon Result on %s"%(datetime.now() - timedelta(days=1)).strftime('%b %d, %Y')
+        message["Subject"]="Justwatch Keepup Content on %s"%(datetime.now().strftime('%b %d, %Y'))
         message["From"]=self.sender_email
         message["To"]=",".join([email_id for email_id in self.receiver_email])
-        #message['Cc']=",".join(self.cc)
-        #message['Bcc']=",".join([email for email in self.bcc])
         port =587
         text=self.user_message()
         part1=MIMEText(text,"plain")
         message.attach(part1)
-        filenames=['recently_added_content_amazon_%s.csv'%(datetime.now().strftime('%b %d, %Y'))]
+        filenames=['Justwatch_keepup_contents_%s.xlsx'%(datetime.now().strftime('%b %d, %Y'))]
         for file in filenames:
-            with open(os.getcwd()+'/operation/attachments/'+file, 'r') as csvfile:
-                csv_dict = [row for row in csv.DictReader(csvfile)]
-                print("data_committed count:", len(csv_dict))
-                if len(csv_dict) > 1:
-                    attachment=os.getcwd()+'/operation/attachments/'+file
-                    file_=self.read_attachment(attachment)
-                    message.attach(file_)
-                    try:
-                        server = smtplib.SMTP("smtp.gmail.com",port)
-                        server.ehlo()
-                        server.starttls()
-                        server.login(self.sender_email,self.password)
-                        server.sendmail(self.sender_email,self.receiver_email,message.as_string())
-                        server.quit()
-                        print("mail sent to %s %s"%(",".join(self.receiver_email),datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-                    except socket.error as e:
-                        print("retrying........",type(e))
-                        self.main()
-                else:
-                    print('csv file is empty and mail not sent........%s'%(datetime.now().strftime('%b %d, %Y')))        
+            attachment=os.getcwd()+'/operation/attachments/'+file
+            wb = xl.load_workbook(attachment, enumerate)
+            for sheet in self.sheets:
+                sheet = wb.get_sheet_by_name('Movies')
+                sheet = wb.worksheets[0]
+                self.sheet_row+=sheet.max_row
+            if self.sheet_row > 3 :            
+                file_=self.read_attachment(attachment)
+                message.attach(file_)
+                try:
+                    server = smtplib.SMTP("smtp.gmail.com",port)
+                    server.ehlo()
+                    server.starttls()
+                    server.login(self.sender_email,self.password)
+                    server.sendmail(self.sender_email,self.receiver_email,message.as_string())
+                    server.quit()
+                    logging.info("mail sent to %s %s"%(",".join(self.receiver_email),datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+                except socket.error as e:
+                    logging.info("retrying........",type(e))
+                    self.main()
+            else:
+                logging.info("mail can't sent and excel file is empty............%s"%datetime.now().strftime("%Y-%m-%d %H:%M:%S"))        
 
-#send_emails().main()
+

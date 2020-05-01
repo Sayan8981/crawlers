@@ -11,9 +11,9 @@ from Justwatch_Crawler.items import *
 sys.path.insert(0,os.getcwd()+"/xpath")
 sys.path.insert(1,os.getcwd()+"/operation")
 import create_db_tables
-# import db_output
-# from db_output import db_output_stats
-# from send_mail import send_emails
+import db_output
+from db_output import db_output_stats
+from send_mail import send_emails
 
 # TO crawl the keep-up content from Justwwatch (Hulu,Showtime,HBOGO)
 
@@ -66,11 +66,11 @@ class justwatchbrowse(Spider):
     def spider_closed(self, spider):
         spider.logger.info("Spider closed: %s" % spider.name)
         # Whatever is here will run when the spider is done.
-        # print ("Preparing to create csv file from database...............")
-        # db_output_stats().main()
-        # time.sleep(10)
-        # print("Preparing to send email to client.................")
-        # send_emails().main()
+        logging.info ("Preparing to create csv file from database...............")
+        db_output_stats().main()
+        time.sleep(10)
+        logging.info("Preparing to send email to client.................")
+        send_emails().main()
 
     def cleanup(self):
         self.movies_meta=dict()
