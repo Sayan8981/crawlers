@@ -334,7 +334,7 @@ class justwatchbrowse(Spider):
         except KeyError:
             self.episode_meta["ott"] = "Null"
         try:
-            self.episode_meta["duration"] = episodes["runtime"]
+            self.episode_meta["duration"] = "{} {}".format(str(episodes["runtime"]),"mins")
         except KeyError:
             self.episode_meta["duration"] = "0"
         try:    
@@ -412,7 +412,7 @@ class justwatchbrowse(Spider):
         item["service_name"] = response.meta["provider_details"]["provider_details"]["service_name"]
         item["added_to_site"] = response.meta["provider_details"]["date"]
         item["updated_at"] = datetime.now().strftime("%d-%m-%Y")
-        #yield item
+        yield item
 
     #TODO: storing required field though items file movies
     def movies_item_stored(self,response):
@@ -432,4 +432,4 @@ class justwatchbrowse(Spider):
         item["service_name"] = response.meta["provider_details"]["provider_details"]["service_name"]
         item["added_to_site"] = response.meta["provider_details"]["date"]
         item["updated_at"] = datetime.now().strftime("%d-%m-%Y")
-        #yield item
+        yield item

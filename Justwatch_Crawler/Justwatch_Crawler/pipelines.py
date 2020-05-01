@@ -32,8 +32,8 @@ class JustwatchCrawlerPipeline(object):
             return item
 
         elif isinstance(item, SeriesItem):
-            self.query="insert into {table_name} (Series_id,Season_id,Title,Show_type,Description,Release_year,original_title,Cast,Duration,Season_number,Genres,Rating,Age_Rating,Service_name,Added_to_site,Updated_at) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)".format(table_name=db_detail.Series_table)
-            self.cursor.execute(self.query,(item["series_id"],item["season_id"],item["title"],item["show_type"],item["description"],item["release_year"],item["original_title"],item["credits"],item["duration"],item["season_number"],item["genres"],item["rating"],item["age_rating"],item["service_name"],item["added_to_site"],item["updated_at"]))
+            self.query="insert into {table_name} (Series_id,Season_id,Title,Show_type,Description,Release_year,original_title,Cast,Season_number,Genres,Rating,Age_Rating,Service_name,Added_to_site,Updated_at) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)".format(table_name=db_detail.Series_table)
+            self.cursor.execute(self.query,(item["series_id"],item["season_id"],item["title"],item["show_type"],item["description"],item["release_year"],item["original_title"],item["credits"],item["season_number"],item["genres"],item["rating"],item["age_rating"],item["service_name"],item["added_to_site"],item["updated_at"]))
             self.connection.autocommit(True)
             self.counter_series+=1
             logging.info({"Total data count series": self.counter_series})
@@ -42,7 +42,6 @@ class JustwatchCrawlerPipeline(object):
             return item 
 
         elif isinstance(item, EpisodeItem):
-            import pdb;pdb.set_trace()
             self.query="insert into {table_name} (Series_id,Season_id,Episode_id,Title,Show_type,Description ,OTT,Duration,season_number,Episode_number,Service_name,Updated_at) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)".format(table_name=db_detail.Episodes_table)
             self.cursor.execute(self.query,(item["series_id"],item["season_id"],item["episode_id"],item["title"],item["show_type"],item["description"],item["ott"],item["duration"],item["season_number"],item["episode_number"],item["service_name"],item["updated_at"]))
             self.connection.autocommit(True)
