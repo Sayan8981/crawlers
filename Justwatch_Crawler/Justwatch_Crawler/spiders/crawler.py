@@ -225,7 +225,7 @@ class justwatchbrowse(Spider):
             try:    
                 self.movies_meta["ott"] = self.get_ott_link_info(movie_response["offers"])
             except KeyError:
-                self.movies_meta["ott"] = []
+                self.movies_meta["ott"] = "Null"
             try:        
                 self.movies_meta["credits"] = self.get_credits_info(movie_response["credits"])  
             except KeyError:
@@ -319,6 +319,7 @@ class justwatchbrowse(Spider):
             return self.series_meta                
 
     def get_episodes_info(self,episodes):
+        self.episode_meta["episode_id"] = episodes["id"]
         try:
             self.episode_meta["title"] = unidecode.unidecode(pinyin.get(episodes["title"]))
         except KeyError:
@@ -331,11 +332,11 @@ class justwatchbrowse(Spider):
         try:    
             self.episode_meta["ott"] = self.get_ott_link_info(episodes["offers"])
         except KeyError:
-            self.episode_meta["ott"] = []
+            self.episode_meta["ott"] = "Null"
         try:
             self.episode_meta["duration"] = episodes["runtime"]
         except KeyError:
-            self.episode_meta["duration"] = ""
+            self.episode_meta["duration"] = "0"
         try:    
             self.episode_meta["season_number"] = episodes["season_number"]
         except KeyError:
@@ -380,11 +381,12 @@ class justwatchbrowse(Spider):
     def episodes_item_stored(self,response):
         item=EpisodeItem()
         item["series_id"] = response.meta["series_sk"]
-        item["season_id"] = response.meta["season_id"]  
+        item["season_id"] = response.meta["season_id"] 
+        item["episode_id"] = response.meta["episode_id"]
         item["title"] = response.meta["data"]["title"]
         item["description"] = response.meta["data"]["description"]
         item["show_type"] = response.meta["data"]["show_type"]
-        item["ott"] = response.meta["data"]["ott"]
+        item["ott"] = str(response.meta["data"]["ott"])
         item["duration"] = response.meta["data"]["duration"]
         item["season_number"] = response.meta["data"]["season_number"]
         item["episode_number"] = response.meta["data"]["episode_number"]
@@ -401,9 +403,9 @@ class justwatchbrowse(Spider):
         item["original_title"] = response.meta["data"]["original_title"]
         item["description"] = response.meta["data"]["description"]
         item["release_year"] = response.meta["data"]["release_year"]
-        item["credits"] = response.meta["data"]["credits"]
-        item["rating"] = response.meta["data"]["rating"]
-        item["genres"] = response.meta["data"]["genres"] 
+        item["credits"] = str(response.meta["data"]["credits"])
+        item["rating"] = str(response.meta["data"]["rating"])
+        item["genres"] = str(response.meta["data"]["genres"])
         item["season_id"] = response.meta["data"]["season_sk"]
         item["season_number"] = response.meta["data"]["season_number"]
         item["age_rating"] = response.meta["data"]["age_rating"]
@@ -421,9 +423,9 @@ class justwatchbrowse(Spider):
         item["original_title"] = response.meta["data"]["original_title"]
         item["description"] = response.meta["data"]["description"]
         item["release_year"] = response.meta["data"]["release_year"]
-        item["ott"] = response.meta["data"]["ott"]
-        item["credits"] = response.meta["data"]["credits"]
-        item["rating"] = response.meta["data"]["rating"]
+        item["ott"] = str(response.meta["data"]["ott"])
+        item["credits"] = str(response.meta["data"]["credits"])
+        item["rating"] = str(response.meta["data"]["rating"])
         item["duration"] = response.meta["data"]["duration"]
         item["genres"] = response.meta["data"]["genres"] 
         item["age_rating"] = response.meta["data"]["age_rating"]
