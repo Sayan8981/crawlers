@@ -84,9 +84,11 @@ LOG_ENABLED = True
 
 LOG_FILE= 'script.log'
 LOG_LEVEL= 'INFO'
-      
-if PROJECT_DIR+'/spiders/'+LOG_FILE:
-	os.remove(PROJECT_DIR+'/spiders/'+LOG_FILE)
+try:   
+    if PROJECT_DIR+'/spiders/'+LOG_FILE:
+        os.remove(PROJECT_DIR+'/spiders/'+LOG_FILE)
+except (Exception,FileNotFoundError):
+    pass        
 logging.getLogger().addHandler(logging.StreamHandler())
 
 # Enable and configure the AutoThrottle extension (disabled by default)

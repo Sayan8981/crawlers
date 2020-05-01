@@ -10,7 +10,7 @@ from datetime import datetime,timedelta
 from Justwatch_Crawler.items import *
 sys.path.insert(0,os.getcwd()+"/xpath")
 sys.path.insert(1,os.getcwd()+"/operation")
-# import create_db_tables
+import create_db_tables
 # import db_output
 # from db_output import db_output_stats
 # from send_mail import send_emails
@@ -382,7 +382,7 @@ class justwatchbrowse(Spider):
         item=EpisodeItem()
         item["series_id"] = response.meta["series_sk"]
         item["season_id"] = response.meta["season_id"] 
-        item["episode_id"] = response.meta["episode_id"]
+        item["episode_id"] = response.meta["data"]["episode_id"]
         item["title"] = response.meta["data"]["title"]
         item["description"] = response.meta["data"]["description"]
         item["show_type"] = response.meta["data"]["show_type"]
@@ -412,7 +412,7 @@ class justwatchbrowse(Spider):
         item["service_name"] = response.meta["provider_details"]["provider_details"]["service_name"]
         item["added_to_site"] = response.meta["provider_details"]["date"]
         item["updated_at"] = datetime.now().strftime("%d-%m-%Y")
-        yield item
+        #yield item
 
     #TODO: storing required field though items file movies
     def movies_item_stored(self,response):
@@ -432,4 +432,4 @@ class justwatchbrowse(Spider):
         item["service_name"] = response.meta["provider_details"]["provider_details"]["service_name"]
         item["added_to_site"] = response.meta["provider_details"]["date"]
         item["updated_at"] = datetime.now().strftime("%d-%m-%Y")
-        yield item
+        #yield item
