@@ -88,6 +88,7 @@ class justwatchbrowse(Spider):
             response=requests.request("GET",api, data={},headers={})
             return response
         except (TimeoutError, ConnectionError) as error:
+            logging.info("Exception caught as %s.......retrying......"%error)
             retry_count+=1
             if retry_count <5:
                 self.fetch_response_for_api(api)
@@ -291,7 +292,7 @@ class justwatchbrowse(Spider):
             self.series_meta["release_year"] = show_response["original_release_year"]
             self.series_meta["show_type"] = show_response ["object_type"]
             try:
-                self.series_meta["original_title"] = show_response["original_title"]
+                self.series_meta["original_title"] = unidecode.unidecode(pinyin.get(show_response["original_title"]))
             except KeyError:
                 self.series_meta["original_title"] = ""    
             try:
