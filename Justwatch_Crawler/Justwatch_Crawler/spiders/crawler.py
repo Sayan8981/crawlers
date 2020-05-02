@@ -66,7 +66,7 @@ class justwatchbrowse(Spider):
     def spider_closed(self, spider):
         spider.logger.info("Spider closed: %s" % spider.name)
         # Whatever is here will run when the spider is done.
-        logging.info ("Preparing to create csv file from database...............")
+        logging.info ("Preparing to create Excel file from database...............")
         db_output_stats().main()
         time.sleep(10)
         logging.info("Preparing to send email to client.................")
