@@ -14,7 +14,7 @@ class db_output_stats:
         self.cursor=''
         self.movie_fieldnames=["Movie_id","Title","Show_type","Description","Release_year","original_title","OTT","Cast","Duration","Genres","Rating","Age_Rating","Service_name","Added_to_site","Updated_at"]
         self.series_fieldnames=["Series_id","Season_id","Title","Show_type","Description","Release_year","original_title","Cast","Season_number","Genres","Rating","Age_Rating","Service_name","Added_to_site","Updated_at"]
-        self.episode_fileldnames=["Series_id","Season_id","Episode_id","Title","Show_type","Description ","OTT","Duration","season_number","Episode_number","Service_name","Updated_at"]
+        self.episode_fileldnames=["Series_id","Season_id","Episode_id","Series_title","Title","Show_type","Description ","OTT","Duration","season_number","Episode_number","Service_name","Updated_at"]
 
     def set_up_db_connection(self):
         self.connection=MySQLdb.connect(host=db_detail.IP_addr,user="%s"%db_detail.username,passwd="%s"%db_detail.passwd,db=db_detail.database_name)
@@ -45,7 +45,7 @@ class db_output_stats:
 
         excel_sheet = excel_file.create_sheet(title='Episodes', index=0)
         excel_sheet.append(self.episode_fileldnames)
-        query="select Series_id,Season_id,Episode_id,Title,Show_type,Description ,OTT,Duration,season_number,Episode_number,Service_name,Updated_at from {table_name} where Updated_at='%s'".format(table_name=db_detail.Episodes_table)
+        query="select Series_id,Season_id,Episode_id,Series_title,Title,Show_type,Description ,OTT,Duration,season_number,Episode_number,Service_name,Updated_at from {table_name} where Updated_at='%s'".format(table_name=db_detail.Episodes_table)
         self.cursor.execute(query%(datetime.now().strftime("%d-%m-%Y")))
         result=self.cursor.fetchall()
         for data in result:

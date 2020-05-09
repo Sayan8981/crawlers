@@ -21,7 +21,7 @@ class send_emails:
 
     def user_input(self):
         self.sender_email="saayan@headrun.com"
-        self.receiver_email=["saayan8981@gmail.com"]
+        self.receiver_email=["saayan9045@yahoo.com"]
         self.password="9891274567"
 
     def user_message(self):

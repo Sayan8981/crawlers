@@ -42,8 +42,8 @@ class JustwatchCrawlerPipeline(object):
             return item 
 
         elif isinstance(item, EpisodeItem):
-            self.query="insert into {table_name} (Series_id,Season_id,Episode_id,Title,Show_type,Description ,OTT,Duration,season_number,Episode_number,Service_name,Updated_at) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)".format(table_name=db_detail.Episodes_table)
-            self.cursor.execute(self.query,(item["series_id"],item["season_id"],item["episode_id"],item["title"],item["show_type"],item["description"],item["ott"],item["duration"],item["season_number"],item["episode_number"],item["service_name"],item["updated_at"]))
+            self.query="insert into {table_name} (Series_id,Season_id,Episode_id,Series_title,Title,Show_type,Description ,OTT,Duration,season_number,Episode_number,Service_name,Updated_at) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)".format(table_name=db_detail.Episodes_table)
+            self.cursor.execute(self.query,(item["series_id"],item["season_id"],item["episode_id"],item["series_title"],item["title"],item["show_type"],item["description"],item["ott"],item["duration"],item["season_number"],item["episode_number"],item["service_name"],item["updated_at"]))
             self.connection.autocommit(True)
             self.counter_episode+=1
             logging.info({"Total data count episodes": self.counter_episode})

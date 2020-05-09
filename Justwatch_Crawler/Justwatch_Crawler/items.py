@@ -53,6 +53,7 @@ class EpisodeItem(scrapy.Item):
     season_id                   = scrapy.Field()  
     episode_id                  = scrapy.Field()
     title                       = scrapy.Field()
+    series_title                = scrapy.Field() 
     description                 = scrapy.Field()
     show_type                   = scrapy.Field()
     ott                         = scrapy.Field()

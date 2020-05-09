@@ -324,7 +324,7 @@ class justwatchbrowse(Spider):
         try:
             self.episode_meta["title"] = unidecode.unidecode(pinyin.get(episodes["title"]))
         except KeyError:
-            self.episode_meta["title"] = ""     
+            self.episode_meta["title"] = ""
         try:
             self.episode_meta["description"] = unidecode.unidecode(pinyin.get(episodes["short_description"]))
         except KeyError:
@@ -365,8 +365,9 @@ class justwatchbrowse(Spider):
         season_meta_url = self.season_meta_url%str(season_id)
         episode_response=self.fetch_response_for_api(season_meta_url)
         if episode_response.status_code == 200:
+            series_title = json.loads(episode_response.text)["show_title"] 
             try:
-                episode_response = json.loads(episode_response.text)["episodes"]
+                episode_response = json.loads(episode_response.text)["episodes"] 
             except KeyError:
                 episode_response = []
                 return self.episode_meta
@@ -374,7 +375,7 @@ class justwatchbrowse(Spider):
                 self.cleanup()
                 episode_meta_info=self.get_episodes_info(episodes)
                 if episode_meta_info != {}:
-                    yield FormRequest(url=str(season_meta_url),callback=self.episodes_item_stored,meta={"provider_details":response.meta,"season_id":season_id,"data":episode_meta_info,"series_sk":series_id},dont_filter=True)        
+                    yield FormRequest(url=str(season_meta_url),callback=self.episodes_item_stored,meta={"provider_details":response.meta,"season_id":season_id,"data":episode_meta_info,"series_sk":series_id,"series_title":series_title},dont_filter=True)        
         else:
             return self.episode_meta            
     
@@ -385,6 +386,7 @@ class justwatchbrowse(Spider):
         item["season_id"] = response.meta["season_id"] 
         item["episode_id"] = response.meta["data"]["episode_id"]
         item["title"] = response.meta["data"]["title"]
+        item["series_title"] = response.meta["series_title"]
         item["description"] = response.meta["data"]["description"]
         item["show_type"] = response.meta["data"]["show_type"]
         item["ott"] = str(response.meta["data"]["ott"])
