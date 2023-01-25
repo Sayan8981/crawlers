@@ -5,7 +5,7 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 
-import MySQLdb
+import pymysql
 import os
 import sys
 import db_detail
@@ -13,7 +13,7 @@ import db_detail
 
 class WhatsNewNetflixCrawlerPipeline(object):
    def __init__(self):
-        self.connection=MySQLdb.connect(host=db_detail.IP_addr,user='%s'%db_detail.username,passwd='%s'%db_detail.passwd,db='%s'%db_detail.database_name,charset="utf8", use_unicode=True)
+        self.connection=pymysql.connect(host=db_detail.IP_addr,user='%s'%db_detail.username,passwd='%s'%db_detail.passwd,db='%s'%db_detail.database_name,charset="utf8", use_unicode=True)
         self.cursor=self.connection.cursor() 
         self.counter=0
 

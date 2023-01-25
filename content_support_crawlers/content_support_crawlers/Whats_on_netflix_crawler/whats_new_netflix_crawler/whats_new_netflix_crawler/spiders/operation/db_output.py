@@ -1,4 +1,4 @@
-import MySQLdb
+import pymysql
 import sys
 import os
 import db_detail
@@ -15,7 +15,7 @@ class db_output_stats:
         self.fieldnames=["netflix_id","title","image","rating","url","content_type","show_type","season_number","year","tv_rating","description","genre","cast","director","duration","language","Awards","updated_db","item_category"]
 
     def set_up_db_connection(self):
-        self.connection=MySQLdb.connect(host=db_detail.IP_addr,user="%s"%db_detail.username,passwd="%s"%db_detail.passwd,db=db_detail.database_name)
+        self.connection=pymysql.connect(host=db_detail.IP_addr,user="%s"%db_detail.username,passwd="%s"%db_detail.passwd,db=db_detail.database_name)
         self.cursor=self.connection.cursor()     
 
     #TODO: creating file for writing

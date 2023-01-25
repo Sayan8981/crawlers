@@ -1,10 +1,7 @@
-import scrapy 
+import scrapy, sys, os, time, re
 from scrapy import *
-import sys
-import os
-import time,re
-import pinyin,unidecode
 from scrapy import signals
+import pinyin,unidecode
 from datetime import datetime,timedelta
 from whats_new_netflix_crawler.items import *
 sys.path.insert(0,os.getcwd()+'/xpath')
@@ -13,7 +10,7 @@ import create_db_tables
 import xpath
 import db_output
 from db_output import db_output_stats
-from send_mail import send_emails
+#from send_mail import send_emails
 
 
 class whatsnewnetflixbrowse(Spider):
@@ -51,13 +48,13 @@ class whatsnewnetflixbrowse(Spider):
         # Whatever is here will run when the spider is done.
         print ("Preparing to create csv file from database...............")
         db_output_stats().main()
-        time.sleep(10)
-        print("Preparing to send email to client.................")
-        send_emails().main()
+        #time.sleep(10)
+        #print("Preparing to send email to client.................")
+        #send_emails().main()
 
     def cleanup(self):
         self.year='' 
-        self.content_img='' 
+        self.content_img=''
         self.content_url=''  
         self.content_id=''
         self.content_type=''
@@ -111,7 +108,8 @@ class whatsnewnetflixbrowse(Spider):
             if self.content_rating:
                 self.content_rating=self.content_rating[0].strip(' ')
             else:
-                self.content_rating=''   
+                self.content_rating=''  
+            #import pdb;pdb.set_trace() 
             self.content_url=sel.xpath(xpath.url_xpath%title).extract_first()     
             self.content_id="".join(re.findall("\d+.*?",self.content_url))
             self.content_type=sel.xpath(xpath.content_type_xpath%title).extract_first()
@@ -119,7 +117,10 @@ class whatsnewnetflixbrowse(Spider):
             if self.content_show_type=='TV Series':
                 self.season_number=sel.xpath(xpath.season_number_xpath%title).extract_first().strip(' ()')    
             else:
-                self.year=sel.xpath(xpath.year_xpath%title).extract_first().strip(' ()')
+                try:
+                    self.year=sel.xpath(xpath.year_xpath%title).extract_first().strip(' ()')
+                except Exception:
+                    self.year = ''
             self.content_tv_rating= sel.xpath(xpath.tv_rating_xpath%title).extract()     
             self.content_tv_rating=tuple(filter(lambda rating: rating!='\n' ,self.content_tv_rating))
             if self.content_tv_rating:
